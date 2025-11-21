@@ -13,11 +13,12 @@ RENDERED_FILES_DIR.mkdir(parents=True, exist_ok=True)
 
 def excel2pdf_via_libreoffice(
         excel_file: Path,
-        output_dir: Path = RENDERED_FILES_DIR / "pdfs"
+        output_dir: Path = RENDERED_FILES_DIR / "pdfs",
+        single_page: bool = True
 ) -> Optional[Path]:
     """
     Convert an Excel file to PDF using LibreOffice.
-    Ensures sheets fit into single pages.
+    If single_page is True, ensures sheets fit into single pages.
     Returns path to PDF if successful, else None.
     """
     try:
@@ -28,8 +29,11 @@ def excel2pdf_via_libreoffice(
         base_name = excel_file.stem
         pdf_file = output_dir / f"{base_name}.pdf"
 
-        # Define the export filter as a raw string
-        export_filter = 'pdf:calc_pdf_Export:{"SinglePageSheets":{"type":"boolean","value":"true"}}'
+        # Define the export filter based on single_page option
+        if single_page:
+            export_filter = 'pdf:calc_pdf_Export:{"SinglePageSheets":{"type":"boolean","value":"true"}}'
+        else:
+            export_filter = 'pdf'
 
         # Get the LibreOffice command dynamically
         libreoffice_cmd = get_libreoffice_command()
@@ -40,6 +44,7 @@ def excel2pdf_via_libreoffice(
         # Build command as list for better security and readability
         cmd = [
             libreoffice_cmd,
+            "--headless",
             "--convert-to", export_filter,
             "--outdir", str(output_dir),
             str(excel_file)

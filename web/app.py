@@ -1,7 +1,7 @@
 import tempfile
 from pathlib import Path
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse, HTMLResponse
 
 from utils.convert_to_pdf import excel2pdf_via_libreoffice
@@ -24,6 +24,9 @@ async def upload_form():
             h1 { color: #333; }
             form { background: #f5f5f5; padding: 20px; border-radius: 8px; }
             input[type="file"] { margin: 10px 0; }
+            .checkbox-container { margin: 15px 0; }
+            .checkbox-container input { margin-right: 8px; }
+            .checkbox-container label { color: #333; }
             button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
             button:hover { background: #0056b3; }
             .info { color: #666; font-size: 14px; margin-top: 10px; }
@@ -34,6 +37,10 @@ async def upload_form():
         <form action="/" method="post" enctype="multipart/form-data">
             <input type="file" name="file" accept=".xlsx,.xls,.doc,.docx,.txt,.odt,.ods,.ppt,.pptx,.csv" required>
             <br>
+            <div class="checkbox-container">
+                <input type="checkbox" id="single_page" name="single_page" value="true">
+                <label for="single_page">Use single page conversion (fit sheet to one page)</label>
+            </div>
             <button type="submit">Convert to PDF</button>
             <p class="info">Supported formats: Excel, Word, PowerPoint, Text, OpenDocument, CSV</p>
         </form>
@@ -43,7 +50,10 @@ async def upload_form():
 
 
 @app.post("/")
-async def to_pdf(file: UploadFile = File(...)):
+async def to_pdf(
+    file: UploadFile = File(...),
+    single_page: str = Form(default="")
+):
     """
     Receive file from form body, convert it to PDF, and return the converted PDF file.
     """
@@ -53,8 +63,9 @@ async def to_pdf(file: UploadFile = File(...)):
         tmp.write(content)
         tmp_path = Path(tmp.name)
 
-    # Convert to PDF
-    pdf_path = excel2pdf_via_libreoffice(tmp_path)
+    # Convert to PDF with single_page option
+    use_single_page = single_page == "true"
+    pdf_path = excel2pdf_via_libreoffice(tmp_path, single_page=use_single_page)
 
     if pdf_path is None:
         raise HTTPException(status_code=500, detail="Failed to convert file to PDF")
