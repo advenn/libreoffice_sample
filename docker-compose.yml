@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  web:
+    build: .
+    container_name: pdf_converter
+    restart: on-failure
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
