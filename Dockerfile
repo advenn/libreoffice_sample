@@ -35,10 +35,9 @@ RUN apt-get update && apt-get install -y \
 
 # Upgrade pip
 RUN python3 -m pip install --upgrade pip
-RUN pip install uv
 # Install Python dependencies
 COPY requirements.txt /app/
-RUN uv pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
 
 # --- LIBREOFFICE INSTALLATION IN DOCKERFILE (PRIMARY BUILD-TIME ATTEMPT) ---
