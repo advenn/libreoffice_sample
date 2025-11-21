@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y \
     libxcursor1 \
     libpng16-16 \
     libfreetype6 \
+    libreoffice-core \
     --no-install-recommends && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
